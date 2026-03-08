@@ -98,6 +98,18 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                 No stamp duty to pay on this property!
               </p>
             )}
+
+            <a
+              href="https://www.landc.co.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center px-6 py-5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors text-lg shadow-md shadow-blue-600/25"
+            >
+              Get a free mortgage quote &rarr;
+            </a>
+            <p className="text-xs text-gray-400 text-center">
+              Compare deals from 90+ lenders. Free, no-obligation service.
+            </p>
           </div>
         )}
       </div>

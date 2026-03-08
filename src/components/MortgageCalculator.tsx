@@ -110,12 +110,12 @@ export default function MortgageCalculator() {
               href="https://www.landc.co.uk"
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full text-center px-6 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-lg"
+              className="block w-full text-center px-8 py-6 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 active:bg-green-800 transition-colors text-xl shadow-lg shadow-green-600/30"
             >
-              Get a free mortgage quote
+              Get a free mortgage quote &rarr;
             </a>
             <p className="text-xs text-gray-400 text-center">
-              You&apos;ll be redirected to L&amp;C Mortgages, a free, no-obligation mortgage broker.
+              Compare deals from 90+ lenders. Free, no-obligation service via L&amp;C Mortgages.
             </p>
           </div>
         )}
