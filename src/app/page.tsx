@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Calculator from "@/components/Calculator";
+import MortgageCalculator from "@/components/MortgageCalculator";
 import Link from "next/link";
 import { UK_CITIES, SEO_PRICES, formatPriceForTitle } from "@/lib/seo-data";
 
@@ -24,6 +25,18 @@ export default function HomePage() {
       </div>
 
       <Calculator />
+
+      <section className="max-w-4xl mx-auto mt-16">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+            How Much Can I Borrow?
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Estimate your maximum mortgage borrowing based on your income. Most lenders offer up to 4.5 times your combined annual income.
+          </p>
+        </div>
+        <MortgageCalculator />
+      </section>
 
       <section className="max-w-4xl mx-auto mt-16">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
