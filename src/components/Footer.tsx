@@ -37,11 +37,17 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
+
+        <div className="border-t border-gray-800 mt-8 pt-8 space-y-4 text-xs text-gray-500">
           <p>
-            Rates are based on current HMRC Stamp Duty Land Tax bands for England and Northern Ireland.
-            This calculator is for guidance only and does not constitute financial advice.
+            <span className="text-gray-400 font-semibold">Disclaimer:</span> This calculator is for guidance purposes only and does not constitute financial, legal or tax advice. Stamp duty calculations are based on current HMRC, Revenue Scotland and Welsh Revenue Authority rates. Always consult a qualified solicitor or financial adviser before making property decisions. We endeavour to keep information accurate and up to date but accept no liability for errors or omissions.
           </p>
+          <p>
+            <span className="text-gray-400 font-semibold">Affiliate Disclosure:</span> Some links on this site are affiliate links. If you use them we may earn a commission at no extra cost to you.
+          </p>
+          <div className="flex items-center justify-center gap-4 pt-4 text-gray-500">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+          </div>
         </div>
       </div>
     </footer>
