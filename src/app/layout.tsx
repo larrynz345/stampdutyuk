@@ -27,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         <meta name="google-site-verification" content="2ptnR5lbkCCC5ZEQ1oD759uswUaNr5TW8obzw6Ytjn8" />
+        <meta name="google-adsense-account" content="ca-pub-6807457667426879" />
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6807457667426879" crossOrigin="anonymous"></script>
       </head>
       <body className="bg-slate-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col antialiased transition-colors">
