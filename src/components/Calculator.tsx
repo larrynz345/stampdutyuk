@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import {
   calculateStampDuty,
   reverseCalculate,
@@ -86,6 +87,20 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
   const deposit = parseInt(depositInput.replace(/,/g, ""), 10) || 0;
   const sdBudget = parseInt(budgetInput.replace(/,/g, ""), 10) || 0;
   const reverseResult = reverseCalculate(deposit, sdBudget, buyerType, location, nonResident);
+
+  // Animated counter for stamp duty total
+  const displayTax = tab === "calculator" && price > 0 ? result.totalTax : 0;
+  const motionTax = useMotionValue(displayTax);
+  const springTax = useSpring(motionTax, { stiffness: 200, damping: 30 });
+  const animatedTax = useTransform(springTax, (v) =>
+    formatCurrency(Math.round(v))
+  );
+  useEffect(() => {
+    motionTax.set(displayTax);
+  }, [displayTax, motionTax]);
+
+  // Key that changes when calculation changes, for result card pulse
+  const resultKey = `${displayTax}-${result.effectiveRate}`;
 
   // URL state sync (home page only)
   useEffect(() => {
@@ -405,16 +420,22 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
         <div className="lg:col-span-2">
           <div className="lg:sticky lg:top-6 space-y-6">
             {/* Results Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-colors">
+            <motion.div
+              key={resultKey}
+              initial={{ scale: 1, opacity: 1 }}
+              animate={{ scale: [1, 1.01, 1], opacity: [1, 0.95, 1] }}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-colors"
+            >
               <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
                 Your {taxName}
               </h2>
 
               {/* Total */}
               <div className="text-center py-4">
-                <p className="text-4xl md:text-5xl font-bold text-indigo-600">
-                  {price > 0 && tab === "calculator" ? formatCurrency(result.totalTax) : "£0"}
-                </p>
+                <motion.p className="text-4xl md:text-5xl font-bold text-indigo-600">
+                  {animatedTax}
+                </motion.p>
                 {/* Prominent effective rate */}
                 <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-950 rounded-full">
                   <span className="text-xs font-medium text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">Effective rate</span>
@@ -549,7 +570,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                   </svg>
                 </a>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
