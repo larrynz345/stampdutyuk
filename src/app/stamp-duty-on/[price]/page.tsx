@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Stamp Duty on ${formatted} Property | SDLT Calculator`,
     description: `Calculate stamp duty on a ${formatted} property. Standard SDLT: ${formatCurrency(result.totalTax)} (${formatPercent(result.effectiveRate)} effective rate). See breakdowns for first-time buyers and additional properties.`,
-    alternates: { canonical: `/stamp-duty-on-${slug}` },
+    alternates: { canonical: `/stamp-duty-on/${slug}` },
   };
 }
 
@@ -136,7 +136,7 @@ export default async function StampDutyOnPricePage({ params }: Props) {
             .map((p) => (
               <Link
                 key={p}
-                href={`/stamp-duty-on-${p}`}
+                href={`/stamp-duty-on/${p}`}
                 className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-blue-300 hover:text-blue-600 transition-colors"
               >
                 {formatPriceForTitle(p)}

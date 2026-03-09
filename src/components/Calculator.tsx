@@ -70,7 +70,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
   }, []);
 
   const handleShare = useCallback(async () => {
-    const url = window.location.origin + (price > 0 ? `/stamp-duty-on-${price}` : "/");
+    const url = window.location.origin + (price > 0 ? `/stamp-duty-on/${price}` : "/");
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

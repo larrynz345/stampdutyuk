@@ -30,7 +30,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <nav className="hidden sm:flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
             <Link href="/" className="hover:text-gray-900 dark:hover:text-white transition-colors">Calculator</Link>
-            <Link href="/stamp-duty-on-300000" className="hover:text-gray-900 dark:hover:text-white transition-colors">Examples</Link>
+            <Link href="/stamp-duty-on/300000" className="hover:text-gray-900 dark:hover:text-white transition-colors">Examples</Link>
           </nav>
           <button
             onClick={toggle}

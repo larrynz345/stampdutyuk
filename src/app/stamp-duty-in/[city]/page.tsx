@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Stamp Duty in ${city.name} | Average Property ${formatPriceForTitle(city.avgPrice)}`,
     description: `Calculate stamp duty in ${city.name}. Based on the average property price of ${formatPriceForTitle(city.avgPrice)}, standard stamp duty is ${formatCurrency(result.totalTax)}. Compare rates for all buyer types.`,
-    alternates: { canonical: `/stamp-duty-in-${slug}` },
+    alternates: { canonical: `/stamp-duty-in/${slug}` },
   };
 }
 
@@ -139,7 +139,7 @@ export default async function StampDutyInCityPage({ params }: Props) {
             .map((c) => (
               <Link
                 key={c.slug}
-                href={`/stamp-duty-in-${c.slug}`}
+                href={`/stamp-duty-in/${c.slug}`}
                 className="p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
               >
                 <span className="block font-medium text-gray-800 text-sm">{c.name}</span>

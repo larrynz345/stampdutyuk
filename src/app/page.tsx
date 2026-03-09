@@ -89,7 +89,7 @@ export default function HomePage() {
           {SEO_PRICES.filter((_, i) => i % 2 === 0).map((price) => (
             <Link
               key={price}
-              href={`/stamp-duty-on-${price}`}
+              href={`/stamp-duty-on/${price}`}
               className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-blue-300 hover:text-blue-600 transition-colors"
             >
               {formatPriceForTitle(price)}
@@ -109,7 +109,7 @@ export default function HomePage() {
           {UK_CITIES.map((city) => (
             <Link
               key={city.slug}
-              href={`/stamp-duty-in-${city.slug}`}
+              href={`/stamp-duty-in/${city.slug}`}
               className="p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
             >
               <span className="block font-medium text-gray-800 text-sm">{city.name}</span>

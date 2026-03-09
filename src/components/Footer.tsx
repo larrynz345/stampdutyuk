@@ -17,7 +17,7 @@ export default function Footer() {
             <ul className="space-y-1 text-sm">
               {[250_000, 300_000, 400_000, 500_000, 750_000, 1_000_000].map((p) => (
                 <li key={p}>
-                  <Link href={`/stamp-duty-on-${p}`} className="hover:text-white transition-colors">
+                  <Link href={`/stamp-duty-on/${p}`} className="hover:text-white transition-colors">
                     Stamp Duty on £{p.toLocaleString("en-GB")}
                   </Link>
                 </li>
@@ -29,7 +29,7 @@ export default function Footer() {
             <ul className="space-y-1 text-sm">
               {["london", "manchester", "birmingham", "bristol", "edinburgh", "leeds"].map((c) => (
                 <li key={c}>
-                  <Link href={`/stamp-duty-in-${c}`} className="hover:text-white transition-colors capitalize">
+                  <Link href={`/stamp-duty-in/${c}`} className="hover:text-white transition-colors capitalize">
                     Stamp Duty in {c.charAt(0).toUpperCase() + c.slice(1)}
                   </Link>
                 </li>
