@@ -193,6 +193,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                     inputMode="numeric"
                     value={priceInput}
                     onChange={handlePriceChange}
+                    onFocus={(e) => e.target.select()}
                     placeholder="Enter property price"
                     className="w-full pl-10 pr-4 py-4 text-xl border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none transition-all"
                   />
@@ -272,6 +273,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                     inputMode="numeric"
                     value={depositInput}
                     onChange={(e) => setDepositInput(formatWithCommas(e.target.value))}
+                    onFocus={(e) => e.target.select()}
                     placeholder="e.g. 50,000"
                     className="w-full pl-10 pr-4 py-4 text-xl border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none transition-all"
                   />
@@ -290,6 +292,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                     inputMode="numeric"
                     value={budgetInput}
                     onChange={(e) => setBudgetInput(formatWithCommas(e.target.value))}
+                    onFocus={(e) => e.target.select()}
                     placeholder="e.g. 15,000"
                     className="w-full pl-10 pr-4 py-4 text-xl border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none transition-all"
                   />
