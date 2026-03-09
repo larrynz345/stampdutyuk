@@ -346,31 +346,6 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
             </div>
           )}
 
-          {/* Mortgage CTA Card */}
-          <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl shadow-lg p-6 md:p-8 text-white">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                  <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
-                  <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.432z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg">Need a mortgage?</h3>
-                <p className="text-indigo-200 text-sm mt-1">
-                  Compare deals from 90+ lenders. Free, no-obligation service via L&C Mortgages.
-                </p>
-                <a
-                  href="https://www.landc.co.uk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-4 px-6 py-3 bg-white text-indigo-700 font-bold rounded-xl hover:bg-indigo-50 transition-colors text-sm"
-                >
-                  Get a free quote &rarr;
-                </a>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* RIGHT COLUMN (Sticky) */}
@@ -496,6 +471,31 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                   </button>
                 </div>
               )}
+
+              {/* Next Step — Mortgage CTA */}
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                  Next Step
+                </h3>
+                <a
+                  href="https://www.landc.co.uk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-950 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors group"
+                >
+                  <div className="min-w-0">
+                    <span className="block text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                      Sort your mortgage with L&C &rarr;
+                    </span>
+                    <span className="block text-xs text-indigo-500 dark:text-indigo-400 mt-0.5">
+                      Compare 90+ lenders. Free, no-obligation.
+                    </span>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 shrink-0 text-indigo-400 dark:text-indigo-500 group-hover:translate-x-0.5 transition-transform">
+                    <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
         </div>
