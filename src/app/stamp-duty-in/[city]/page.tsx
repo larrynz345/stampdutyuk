@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Calculator from "@/components/Calculator";
+import CalculatorWrapper from "@/components/CalculatorWrapper";
 import Link from "next/link";
 import { calculateStampDuty, formatCurrency, formatPercent } from "@/lib/stamp-duty";
 import { UK_CITIES, formatPriceForTitle } from "@/lib/seo-data";
@@ -97,7 +97,7 @@ export default async function StampDutyInCityPage({ params }: Props) {
         </p>
       </div>
 
-      <Calculator initialPrice={city.avgPrice} />
+      <CalculatorWrapper initialPrice={city.avgPrice} />
 
       <section className="max-w-4xl mx-auto mt-12">
         <h2 className="text-xl font-bold text-gray-900 mb-4">

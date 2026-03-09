@@ -3,14 +3,17 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
+import { getCurrentTaxYear } from "@/lib/stamp-duty";
+
+const taxYear = getCurrentTaxYear();
 
 export const metadata: Metadata = {
   title: {
-    default: "UK Stamp Duty Calculator 2025 | SDLT Calculator",
+    default: `UK Stamp Duty Calculator ${taxYear} | SDLT Calculator`,
     template: "%s | Stamp Duty UK",
   },
   description:
-    "Free UK Stamp Duty Land Tax (SDLT) calculator. Calculate stamp duty for standard buyers, first-time buyers, and additional properties in England & Northern Ireland.",
+    `Free UK Stamp Duty Land Tax (SDLT) calculator for ${taxYear}. Calculate stamp duty for standard buyers, first-time buyers, and additional properties in England & Northern Ireland.`,
   keywords: ["stamp duty calculator", "SDLT calculator", "UK stamp duty", "stamp duty land tax", "property tax UK"],
   openGraph: {
     type: "website",

@@ -177,6 +177,19 @@ export function reverseCalculate(
   return { maxPrice: lo, actualTax, totalBudget };
 }
 
+/**
+ * Returns the current UK tax year string (e.g. "2025/26").
+ * UK tax year runs April 6 to April 5.
+ */
+export function getCurrentTaxYear(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-indexed, so April = 3
+  const day = now.getDate();
+  const taxYearStart = month > 3 || (month === 3 && day >= 6) ? year : year - 1;
+  return `${taxYearStart}/${String(taxYearStart + 1).slice(-2)}`;
+}
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(amount);
 }

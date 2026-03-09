@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Calculator from "@/components/Calculator";
+import CalculatorWrapper from "@/components/CalculatorWrapper";
 import Link from "next/link";
 import { calculateStampDuty, formatCurrency, formatPercent } from "@/lib/stamp-duty";
 import { SEO_PRICES, slugToPrice, formatPriceForTitle } from "@/lib/seo-data";
@@ -86,7 +86,7 @@ export default async function StampDutyOnPricePage({ params }: Props) {
         ))}
       </div>
 
-      <Calculator initialPrice={price} />
+      <CalculatorWrapper initialPrice={price} />
 
       <section className="max-w-4xl mx-auto mt-12">
         <h2 className="text-xl font-bold text-gray-900 mb-4">

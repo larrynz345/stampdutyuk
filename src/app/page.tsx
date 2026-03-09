@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
-import Calculator from "@/components/Calculator";
+import CalculatorWrapper from "@/components/CalculatorWrapper";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import Link from "next/link";
 import { UK_CITIES, SEO_PRICES, formatPriceForTitle } from "@/lib/seo-data";
+import { getCurrentTaxYear } from "@/lib/stamp-duty";
+
+const taxYear = getCurrentTaxYear();
 
 export const metadata: Metadata = {
-  title: "UK Stamp Duty Calculator 2025 | Free SDLT Calculator",
+  title: `UK Stamp Duty Calculator ${taxYear} | Free SDLT Calculator`,
   description:
-    "Calculate UK Stamp Duty Land Tax (SDLT) instantly. Free calculator for standard buyers, first-time buyers, and additional properties. Updated for 2025 rates.",
+    `Calculate UK Stamp Duty Land Tax (SDLT) instantly. Free calculator for standard buyers, first-time buyers, and additional properties. Updated for ${taxYear} rates.`,
   alternates: { canonical: "/" },
 };
 
@@ -20,17 +23,17 @@ export default function HomePage() {
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Calculate how much Stamp Duty Land Tax (SDLT) you&apos;ll pay on your property
-          purchase in England or Northern Ireland. Updated with the latest 2025 rates.
+          purchase in England or Northern Ireland. Updated with the latest {taxYear} rates.
         </p>
         <span className="inline-flex items-center gap-1.5 mt-4 px-3 py-1 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400 text-xs font-medium rounded-full border border-green-200 dark:border-green-800">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
             <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 01.208 1.04l-5 7.5a.75.75 0 01-1.154.114l-3-3a.75.75 0 011.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 011.04-.207z" clipRule="evenodd" />
           </svg>
-          Updated for 2025/26 HMRC rates
+          Updated for {taxYear} HMRC rates
         </span>
       </div>
 
-      <Calculator />
+      <CalculatorWrapper />
 
       <section className="max-w-4xl mx-auto mt-16">
         <div className="text-center mb-10">
@@ -46,7 +49,7 @@ export default function HomePage() {
 
       <section className="max-w-4xl mx-auto mt-16">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Current UK Stamp Duty Rates (2025)
+          Current UK Stamp Duty Rates ({taxYear})
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm">

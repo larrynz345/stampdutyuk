@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   calculateStampDuty,
   reverseCalculate,
@@ -25,11 +26,21 @@ const LOCATIONS: { value: PropertyLocation; label: string }[] = [
   { value: "wales", label: "Wales" },
 ];
 
-const BUYER_OPTIONS: { value: BuyerType; label: string }[] = [
-  { value: "standard", label: "Standard" },
-  { value: "first-time", label: "First-Time" },
-  { value: "additional", label: "Additional" },
+const BUYER_OPTIONS: { value: BuyerType; label: string; urlKey: string }[] = [
+  { value: "standard", label: "Standard", urlKey: "std" },
+  { value: "first-time", label: "First-Time", urlKey: "ftb" },
+  { value: "additional", label: "Additional", urlKey: "add" },
 ];
+
+function buyerFromUrl(key: string | null): BuyerType {
+  if (key === "ftb") return "first-time";
+  if (key === "add") return "additional";
+  return "standard";
+}
+
+function buyerToUrl(bt: BuyerType): string {
+  return BUYER_OPTIONS.find((o) => o.value === bt)?.urlKey ?? "std";
+}
 
 function formatWithCommas(value: string): string {
   const num = value.replace(/[^0-9]/g, "");
@@ -40,10 +51,25 @@ function formatWithCommas(value: string): string {
 type CalcTab = "calculator" | "reverse";
 
 export default function Calculator({ initialPrice = 0 }: { initialPrice?: number }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+  const initDone = useRef(false);
+
+  // Read initial state from URL params (only on home page)
+  const urlPrice = isHomePage ? parseInt(searchParams.get("price") || "", 10) || 0 : 0;
+  const urlBuyer = isHomePage ? buyerFromUrl(searchParams.get("buyer")) : "standard";
+  const urlLocation = isHomePage
+    ? (["england", "scotland", "wales"].includes(searchParams.get("location") || "") ? searchParams.get("location") as PropertyLocation : "england")
+    : "england";
+
+  const effectiveInitialPrice = urlPrice || initialPrice;
+
   const [tab, setTab] = useState<CalcTab>("calculator");
-  const [priceInput, setPriceInput] = useState(initialPrice > 0 ? initialPrice.toLocaleString("en-GB") : "");
-  const [buyerType, setBuyerType] = useState<BuyerType>("standard");
-  const [location, setLocation] = useState<PropertyLocation>("england");
+  const [priceInput, setPriceInput] = useState(effectiveInitialPrice > 0 ? effectiveInitialPrice.toLocaleString("en-GB") : "");
+  const [buyerType, setBuyerType] = useState<BuyerType>(urlPrice ? urlBuyer : "standard");
+  const [location, setLocation] = useState<PropertyLocation>(urlPrice ? urlLocation : "england");
   const [nonResident, setNonResident] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -61,6 +87,23 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
   const sdBudget = parseInt(budgetInput.replace(/,/g, ""), 10) || 0;
   const reverseResult = reverseCalculate(deposit, sdBudget, buyerType, location, nonResident);
 
+  // URL state sync (home page only)
+  useEffect(() => {
+    if (!isHomePage) return;
+    // Skip first render to avoid overwriting URL on mount
+    if (!initDone.current) {
+      initDone.current = true;
+      return;
+    }
+    const params = new URLSearchParams();
+    if (price > 0) params.set("price", price.toString());
+    if (buyerType !== "standard") params.set("buyer", buyerToUrl(buyerType));
+    if (location !== "england") params.set("location", location);
+    const qs = params.toString();
+    const newUrl = qs ? `${pathname}?${qs}` : pathname;
+    window.history.replaceState(null, "", newUrl);
+  }, [price, buyerType, location, isHomePage, pathname]);
+
   const handlePriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPriceInput(formatWithCommas(e.target.value));
   }, []);
@@ -70,11 +113,21 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
   }, []);
 
   const handleShare = useCallback(async () => {
-    const url = window.location.origin + (price > 0 ? `/stamp-duty-on/${price}` : "/");
+    let url: string;
+    if (isHomePage) {
+      const params = new URLSearchParams();
+      if (price > 0) params.set("price", price.toString());
+      if (buyerType !== "standard") params.set("buyer", buyerToUrl(buyerType));
+      if (location !== "england") params.set("location", location);
+      const qs = params.toString();
+      url = window.location.origin + (qs ? `/?${qs}` : "/");
+    } else {
+      url = window.location.href;
+    }
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [price]);
+  }, [price, buyerType, location, isHomePage]);
 
   const handleDownload = useCallback(() => {
     const lines = [
@@ -107,7 +160,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
   }, [price, buyerType, location, nonResident, result, taxName]);
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto pb-20 md:pb-0">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* LEFT COLUMN */}
         <div className="lg:col-span-3 space-y-6">
@@ -348,7 +401,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
 
         </div>
 
-        {/* RIGHT COLUMN (Sticky) */}
+        {/* RIGHT COLUMN (Sticky) — hidden on mobile, visible on lg */}
         <div className="lg:col-span-2">
           <div className="lg:sticky lg:top-6 space-y-6">
             {/* Results Card */}
@@ -497,6 +550,24 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                 </a>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] px-4 py-3">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">{taxName} to pay</p>
+            <p className="text-2xl font-bold text-indigo-600">
+              {price > 0 && tab === "calculator" ? formatCurrency(result.totalTax) : "£0"}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Effective rate</p>
+            <p className="text-lg font-bold text-indigo-600">
+              {price > 0 && tab === "calculator" ? formatPercent(result.effectiveRate) : "0.00%"}
+            </p>
           </div>
         </div>
       </div>
