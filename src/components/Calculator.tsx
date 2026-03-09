@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { calculateStampDuty, formatCurrency, formatPercent, type BuyerType } from "@/lib/stamp-duty";
+import {
+  calculateStampDuty,
+  reverseCalculate,
+  formatCurrency,
+  formatPercent,
+  getTaxName,
+  type BuyerType,
+  type PropertyLocation,
+} from "@/lib/stamp-duty";
 
 const QUICK_PRICES = [
   { label: "£250k", value: 250_000 },
@@ -11,25 +19,16 @@ const QUICK_PRICES = [
   { label: "£1M", value: 1_000_000 },
 ];
 
-const BUYER_OPTIONS = [
-  {
-    value: "standard" as BuyerType,
-    label: "Standard",
-    desc: "Moving home or not a first-time buyer",
-    tip: "Standard SDLT rates apply to most property purchases in England and Northern Ireland.",
-  },
-  {
-    value: "first-time" as BuyerType,
-    label: "First-Time Buyer",
-    desc: "Purchasing your first property",
-    tip: "Relief available on properties up to £625,000. No tax on the first £425,000.",
-  },
-  {
-    value: "additional" as BuyerType,
-    label: "Additional Property",
-    desc: "Second home or buy-to-let",
-    tip: "A 5% surcharge applies on top of standard rates for additional properties.",
-  },
+const LOCATIONS: { value: PropertyLocation; label: string }[] = [
+  { value: "england", label: "England / N. Ireland" },
+  { value: "scotland", label: "Scotland" },
+  { value: "wales", label: "Wales" },
+];
+
+const BUYER_OPTIONS: { value: BuyerType; label: string }[] = [
+  { value: "standard", label: "Standard" },
+  { value: "first-time", label: "First-Time" },
+  { value: "additional", label: "Additional" },
 ];
 
 function formatWithCommas(value: string): string {
@@ -38,15 +37,29 @@ function formatWithCommas(value: string): string {
   return parseInt(num, 10).toLocaleString("en-GB");
 }
 
+type CalcTab = "calculator" | "reverse";
+
 export default function Calculator({ initialPrice = 0 }: { initialPrice?: number }) {
+  const [tab, setTab] = useState<CalcTab>("calculator");
   const [priceInput, setPriceInput] = useState(initialPrice > 0 ? initialPrice.toLocaleString("en-GB") : "");
   const [buyerType, setBuyerType] = useState<BuyerType>("standard");
-  const [showTip, setShowTip] = useState<string | null>(null);
+  const [location, setLocation] = useState<PropertyLocation>("england");
+  const [nonResident, setNonResident] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Reverse calculator state
+  const [depositInput, setDepositInput] = useState("");
+  const [budgetInput, setBudgetInput] = useState("");
+
   const price = parseInt(priceInput.replace(/,/g, ""), 10) || 0;
-  const result = calculateStampDuty(price, buyerType);
+  const result = calculateStampDuty(price, buyerType, location, nonResident);
   const maxBandTax = result.breakdown.length > 0 ? Math.max(...result.breakdown.map((b) => b.tax)) : 0;
+  const taxName = getTaxName(location);
+
+  // Reverse calc
+  const deposit = parseInt(depositInput.replace(/,/g, ""), 10) || 0;
+  const sdBudget = parseInt(budgetInput.replace(/,/g, ""), 10) || 0;
+  const reverseResult = reverseCalculate(deposit, sdBudget, buyerType, location, nonResident);
 
   const handlePriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPriceInput(formatWithCommas(e.target.value));
@@ -65,13 +78,15 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
 
   const handleDownload = useCallback(() => {
     const lines = [
-      "UK Stamp Duty Calculation",
+      `UK ${taxName} Calculation`,
       `Date: ${new Date().toLocaleDateString("en-GB")}`,
       "",
       `Property Price: ${formatCurrency(price)}`,
       `Buyer Type: ${BUYER_OPTIONS.find((o) => o.value === buyerType)?.label}`,
+      `Location: ${LOCATIONS.find((l) => l.value === location)?.label}`,
+      `Non-UK Resident: ${nonResident ? "Yes" : "No"}`,
       "",
-      `Total Stamp Duty: ${formatCurrency(result.totalTax)}`,
+      `Total ${taxName}: ${formatCurrency(result.totalTax)}`,
       `Effective Rate: ${formatPercent(result.effectiveRate)}`,
       "",
       "Band Breakdown:",
@@ -80,7 +95,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
       ),
       "",
       `Property Price: ${formatCurrency(price)}`,
-      `Stamp Duty:     ${formatCurrency(result.totalTax)}`,
+      `${taxName}:${" ".repeat(Math.max(1, 14 - taxName.length))}${formatCurrency(result.totalTax)}`,
       `Total Cost:     ${formatCurrency(price + result.totalTax)}`,
     ];
     const blob = new Blob([lines.join("\n")], { type: "text/plain" });
@@ -89,92 +104,244 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
     a.download = `stamp-duty-${price}.txt`;
     a.click();
     URL.revokeObjectURL(a.href);
-  }, [price, buyerType, result]);
+  }, [price, buyerType, location, nonResident, result, taxName]);
 
   return (
     <div className="max-w-6xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* LEFT COLUMN */}
         <div className="lg:col-span-3 space-y-6">
-          {/* Price Input Card */}
+          {/* Tab Switcher */}
+          <div className="flex bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-1.5 transition-colors">
+            {(
+              [
+                { value: "calculator", label: "Calculator" },
+                { value: "reverse", label: "Reverse Calculator" },
+              ] as const
+            ).map((t) => (
+              <button
+                key={t.value}
+                onClick={() => setTab(t.value)}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
+                  tab === t.value
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Location Toggle */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-colors">
-            <label htmlFor="price" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Property Price
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              Property Location
             </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xl font-semibold">£</span>
-              <input
-                id="price"
-                type="text"
-                inputMode="numeric"
-                value={priceInput}
-                onChange={handlePriceChange}
-                placeholder="Enter property price"
-                className="w-full pl-10 pr-4 py-4 text-xl border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none transition-all"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2 mt-4">
-              {QUICK_PRICES.map((qp) => (
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+              {LOCATIONS.map((loc) => (
                 <button
-                  key={qp.value}
-                  onClick={() => handleQuickPrice(qp.value)}
-                  className={`px-4 py-2 text-sm font-medium rounded-full border transition-all ${
-                    price === qp.value
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  key={loc.value}
+                  onClick={() => setLocation(loc.value)}
+                  className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
+                    location === loc.value
+                      ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  {qp.label}
+                  {loc.label}
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Buyer Type Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-colors">
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Buyer Status</label>
-            <div className="space-y-3">
-              {BUYER_OPTIONS.map((opt) => (
-                <label
-                  key={opt.value}
-                  className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    buyerType === opt.value
-                      ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950"
-                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+            {/* Non-UK Resident Toggle */}
+            <div className="mt-4 flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+              <div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Non-UK Resident</span>
+                <span className="block text-xs text-gray-500 dark:text-gray-400">+2% surcharge on all bands</span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={nonResident}
+                onClick={() => setNonResident(!nonResident)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  nonResident ? "bg-indigo-600" : "bg-gray-300 dark:bg-gray-600"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    nonResident ? "translate-x-6" : "translate-x-1"
                   }`}
-                >
-                  <input
-                    type="radio"
-                    name="buyerType"
-                    value={opt.value}
-                    checked={buyerType === opt.value}
-                    onChange={() => setBuyerType(opt.value)}
-                    className="mt-1 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <span className="block font-semibold text-sm text-gray-900 dark:text-white">{opt.label}</span>
-                    <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">{opt.desc}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowTip(showTip === opt.value ? null : opt.value);
-                    }}
-                    className="shrink-0 w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-xs font-bold flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-900 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                    aria-label={`Info about ${opt.label}`}
-                  >
-                    ?
-                  </button>
-                  {showTip === opt.value && (
-                    <div className="absolute mt-8 right-4 z-10 max-w-xs p-3 rounded-lg bg-gray-900 dark:bg-gray-700 text-white text-xs shadow-lg">
-                      {opt.tip}
-                    </div>
-                  )}
-                </label>
-              ))}
+                />
+              </button>
             </div>
           </div>
+
+          {tab === "calculator" ? (
+            <>
+              {/* Price Input Card */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-colors">
+                <label htmlFor="price" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Property Price
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xl font-semibold">£</span>
+                  <input
+                    id="price"
+                    type="text"
+                    inputMode="numeric"
+                    value={priceInput}
+                    onChange={handlePriceChange}
+                    placeholder="Enter property price"
+                    className="w-full pl-10 pr-4 py-4 text-xl border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none transition-all"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {QUICK_PRICES.map((qp) => (
+                    <button
+                      key={qp.value}
+                      onClick={() => handleQuickPrice(qp.value)}
+                      className={`px-4 py-2 text-sm font-medium rounded-full border transition-all ${
+                        price === qp.value
+                          ? "bg-indigo-600 text-white border-indigo-600"
+                          : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                      }`}
+                    >
+                      {qp.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Buyer Type Card — Pill Toggle */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-colors">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Buyer Type</label>
+                <div className="flex bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+                  {BUYER_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setBuyerType(opt.value)}
+                      className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                        buyerType === opt.value
+                          ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                          : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {buyerType === "first-time" && location === "england" && (
+                  <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
+                    Relief applies to properties up to £625,000. Standard rates apply above this.
+                  </p>
+                )}
+                {buyerType === "first-time" && location === "wales" && (
+                  <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
+                    Wales does not offer first-time buyer relief. Standard LTT rates apply.
+                  </p>
+                )}
+                {buyerType === "additional" && (
+                  <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                    {location === "scotland"
+                      ? "6% ADS surcharge applies on top of LBTT rates."
+                      : location === "wales"
+                        ? "4% higher rate surcharge applies on top of LTT rates."
+                        : "5% surcharge applies on top of standard SDLT rates."}
+                  </p>
+                )}
+              </div>
+            </>
+          ) : (
+            /* Reverse Calculator */
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-colors space-y-5">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Enter your total budget and we&apos;ll calculate the maximum property price you can afford after {taxName}.
+              </p>
+
+              <div>
+                <label htmlFor="deposit" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Deposit / Property Funds
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xl font-semibold">£</span>
+                  <input
+                    id="deposit"
+                    type="text"
+                    inputMode="numeric"
+                    value={depositInput}
+                    onChange={(e) => setDepositInput(formatWithCommas(e.target.value))}
+                    placeholder="e.g. 50,000"
+                    className="w-full pl-10 pr-4 py-4 text-xl border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="sdbudget" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  {taxName} Budget
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xl font-semibold">£</span>
+                  <input
+                    id="sdbudget"
+                    type="text"
+                    inputMode="numeric"
+                    value={budgetInput}
+                    onChange={(e) => setBudgetInput(formatWithCommas(e.target.value))}
+                    placeholder="e.g. 15,000"
+                    className="w-full pl-10 pr-4 py-4 text-xl border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Buyer Type — Pill Toggle */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Buyer Type</label>
+                <div className="flex bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+                  {BUYER_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setBuyerType(opt.value)}
+                      className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                        buyerType === opt.value
+                          ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                          : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(deposit > 0 || sdBudget > 0) && (
+                <div className="bg-indigo-50 dark:bg-indigo-950 rounded-xl p-5 space-y-3">
+                  <div className="text-center">
+                    <p className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">
+                      Maximum Property Price
+                    </p>
+                    <p className="text-3xl font-bold text-indigo-600 mt-1">
+                      {formatCurrency(reverseResult.maxPrice)}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-indigo-200 dark:border-indigo-800">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{taxName} payable</p>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">{formatCurrency(reverseResult.actualTax)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Total budget used</p>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">
+                        {formatCurrency(reverseResult.maxPrice + reverseResult.actualTax)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Mortgage CTA Card */}
           <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl shadow-lg p-6 md:p-8 text-white">
@@ -209,38 +376,39 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
             {/* Results Card */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-colors">
               <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
-                Your Stamp Duty
+                Your {taxName}
               </h2>
 
-              {/* Total SDLT */}
+              {/* Total */}
               <div className="text-center py-4">
                 <p className="text-4xl md:text-5xl font-bold text-indigo-600">
-                  {price > 0 ? formatCurrency(result.totalTax) : "£0"}
+                  {price > 0 && tab === "calculator" ? formatCurrency(result.totalTax) : "£0"}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Effective rate:{" "}
-                  <span className="font-semibold text-gray-700 dark:text-gray-200">
-                    {formatPercent(result.effectiveRate)}
+                {/* Prominent effective rate */}
+                <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-950 rounded-full">
+                  <span className="text-xs font-medium text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">Effective rate</span>
+                  <span className="text-lg font-bold text-indigo-600">
+                    {price > 0 && tab === "calculator" ? formatPercent(result.effectiveRate) : "0.00%"}
                   </span>
-                </p>
+                </div>
               </div>
 
               {/* Progress Bar */}
               <div className="mt-4">
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  <span>Tax portion</span>
-                  <span>{price > 0 ? formatPercent(result.effectiveRate) : "0.00%"}</span>
+                  <span>Tax vs. property value</span>
+                  <span>{price > 0 && tab === "calculator" ? formatPercent(result.effectiveRate) : "0.00%"}</span>
                 </div>
                 <div className="w-full h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(result.effectiveRate, 100)}%` }}
+                    style={{ width: `${tab === "calculator" ? Math.min(result.effectiveRate, 100) : 0}%` }}
                   />
                 </div>
               </div>
 
               {/* Band Breakdown */}
-              {result.breakdown.length > 0 && (
+              {tab === "calculator" && result.breakdown.length > 0 && (
                 <div className="mt-6">
                   <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
                     Tax by Band
@@ -273,14 +441,14 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                 </div>
               )}
 
-              {result.totalTax === 0 && price > 0 && (
+              {tab === "calculator" && result.totalTax === 0 && price > 0 && (
                 <p className="text-center text-green-600 dark:text-green-400 font-medium mt-4">
-                  No stamp duty to pay!
+                  No {taxName} to pay!
                 </p>
               )}
 
               {/* Cost Summary */}
-              {price > 0 && (
+              {tab === "calculator" && price > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 space-y-2">
                   <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
                     Cost Summary
@@ -290,7 +458,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                     <span className="text-gray-800 dark:text-gray-200">{formatCurrency(price)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Stamp duty</span>
+                    <span className="text-gray-600 dark:text-gray-400">{taxName}</span>
                     <span className="text-indigo-600 font-medium">+ {formatCurrency(result.totalTax)}</span>
                   </div>
                   <div className="flex justify-between text-sm font-bold pt-2 border-t border-gray-100 dark:border-gray-700">
@@ -301,7 +469,7 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
               )}
 
               {/* Actions */}
-              {price > 0 && (
+              {tab === "calculator" && price > 0 && (
                 <div className="mt-6 flex gap-2">
                   <button
                     onClick={handleShare}
