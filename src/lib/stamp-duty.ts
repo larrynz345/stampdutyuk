@@ -39,7 +39,7 @@ const SCOTLAND_FIRST_TIME_BANDS: TaxBand[] = [
   { from: 750_000, to: Infinity, rate: 0.12 },
 ];
 
-const SCOTLAND_ADDITIONAL_SURCHARGE = 0.06;
+const SCOTLAND_ADS_RATE = 0.08; // Additional Dwelling Supplement: 8% on full price
 
 // Wales — LTT
 const WALES_BANDS: TaxBand[] = [
@@ -110,9 +110,18 @@ export function calculateStampDuty(
   let breakdown: BandBreakdown[];
 
   if (location === "scotland") {
-    const additionalSurcharge = buyerType === "additional" ? SCOTLAND_ADDITIONAL_SURCHARGE : 0;
     const bands = buyerType === "first-time" ? SCOTLAND_FIRST_TIME_BANDS : SCOTLAND_BANDS;
-    breakdown = calculateBands(price, bands, additionalSurcharge + residentSurcharge);
+    breakdown = calculateBands(price, bands, residentSurcharge);
+    if (buyerType === "additional") {
+      const adsTax = Math.round(price * SCOTLAND_ADS_RATE);
+      breakdown.push({
+        from: 0,
+        to: price,
+        rate: SCOTLAND_ADS_RATE,
+        taxable: price,
+        tax: adsTax,
+      });
+    }
   } else if (location === "wales") {
     // Wales has no first-time buyer relief
     const additionalSurcharge = buyerType === "additional" ? WALES_ADDITIONAL_SURCHARGE : 0;

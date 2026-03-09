@@ -466,11 +466,13 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                     Tax by Band
                   </h3>
                   <div className="space-y-3">
-                    {result.breakdown.map((band, i) => (
+                    {result.breakdown.map((band, i) => {
+                      const isADS = location === "scotland" && buyerType === "additional" && band.from === 0 && band.rate === 0.08 && i === result.breakdown.length - 1;
+                      return (
                       <div key={i}>
                         <div className="flex items-center justify-between text-sm mb-1">
                           <span className="text-gray-600 dark:text-gray-400">
-                            {(band.rate * 100).toFixed(0)}%
+                            {isADS ? "ADS 8%" : `${(band.rate * 100).toFixed(0)}%`}
                           </span>
                           <span className="font-semibold text-gray-800 dark:text-gray-200">
                             {formatCurrency(band.tax)}
@@ -478,17 +480,18 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                         </div>
                         <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-indigo-400 dark:bg-indigo-500 rounded-full transition-all duration-500"
+                            className={`h-full ${isADS ? "bg-amber-400 dark:bg-amber-500" : "bg-indigo-400 dark:bg-indigo-500"} rounded-full transition-all duration-500`}
                             style={{
                               width: maxBandTax > 0 ? `${(band.tax / maxBandTax) * 100}%` : "0%",
                             }}
                           />
                         </div>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                          {formatCurrency(band.from)} &ndash; {formatCurrency(band.to)}
+                          {isADS ? "Additional Dwelling Supplement (full price)" : <>{formatCurrency(band.from)} &ndash; {formatCurrency(band.to)}</>}
                         </p>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
