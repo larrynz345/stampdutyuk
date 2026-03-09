@@ -581,9 +581,9 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
           <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide shrink-0">
             Your {taxName}
           </p>
-          <p className="text-2xl font-bold text-indigo-600 mx-3">
-            {price > 0 && tab === "calculator" ? formatCurrency(result.totalTax) : "£0"}
-          </p>
+          <motion.p className="text-2xl font-bold text-indigo-600 mx-3">
+            {animatedTax}
+          </motion.p>
           <span className="shrink-0 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950 rounded-full text-xs font-bold text-indigo-600">
             {price > 0 && tab === "calculator" ? formatPercent(result.effectiveRate) : "0.00%"}
           </span>
