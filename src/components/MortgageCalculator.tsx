@@ -107,7 +107,7 @@ export default function MortgageCalculator() {
             </div>
 
             <a
-              href="https://www.landc.co.uk"
+              href="https://www.loan.co.uk"
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full text-center px-8 py-6 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 active:bg-green-800 transition-colors text-xl shadow-lg shadow-green-600/30"
@@ -115,7 +115,7 @@ export default function MortgageCalculator() {
               Get a free mortgage quote &rarr;
             </a>
             <p className="text-xs text-gray-400 text-center">
-              Compare deals from 90+ lenders. Free, no-obligation service via L&amp;C Mortgages.
+              Free mortgage comparison. No obligation.
             </p>
           </div>
         )}

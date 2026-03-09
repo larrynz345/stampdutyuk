@@ -552,17 +552,17 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
                   Next Step
                 </h3>
                 <a
-                  href="https://www.landc.co.uk"
+                  href="https://www.loan.co.uk"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-950 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors group"
                 >
                   <div className="min-w-0">
                     <span className="block text-sm font-semibold text-indigo-700 dark:text-indigo-300">
-                      Sort your mortgage with L&C &rarr;
+                      Compare mortgage rates at Loan.co.uk &rarr;
                     </span>
                     <span className="block text-xs text-indigo-500 dark:text-indigo-400 mt-0.5">
-                      Compare 90+ lenders. Free, no-obligation.
+                      Free mortgage comparison. No obligation.
                     </span>
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 shrink-0 text-indigo-400 dark:text-indigo-500 group-hover:translate-x-0.5 transition-transform">
