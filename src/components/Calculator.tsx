@@ -576,20 +576,17 @@ export default function Calculator({ initialPrice = 0 }: { initialPrice?: number
       </div>
 
       {/* Mobile Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] px-4 py-3">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] px-4 py-3">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">{taxName} to pay</p>
-            <p className="text-2xl font-bold text-indigo-600">
-              {price > 0 && tab === "calculator" ? formatCurrency(result.totalTax) : "£0"}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Effective rate</p>
-            <p className="text-lg font-bold text-indigo-600">
-              {price > 0 && tab === "calculator" ? formatPercent(result.effectiveRate) : "0.00%"}
-            </p>
-          </div>
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide shrink-0">
+            Your {taxName}
+          </p>
+          <p className="text-2xl font-bold text-indigo-600 mx-3">
+            {price > 0 && tab === "calculator" ? formatCurrency(result.totalTax) : "£0"}
+          </p>
+          <span className="shrink-0 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950 rounded-full text-xs font-bold text-indigo-600">
+            {price > 0 && tab === "calculator" ? formatPercent(result.effectiveRate) : "0.00%"}
+          </span>
         </div>
       </div>
     </div>
