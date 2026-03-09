@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="py-8 md:py-12 px-4">
-      <div className="max-w-4xl mx-auto text-center mb-10">
-        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+      <div className="max-w-6xl mx-auto text-center mb-10">
+        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
           UK Stamp Duty Calculator
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Calculate how much Stamp Duty Land Tax (SDLT) you&apos;ll pay on your property
           purchase in England or Northern Ireland. Updated with the latest 2025 rates.
         </p>
